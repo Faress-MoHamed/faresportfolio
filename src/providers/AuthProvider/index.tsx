@@ -9,14 +9,13 @@ const AuthProvider: FC<{ children: React.ReactNode }> = ({ children }) => {
 	const { status } = useSession();
 	const router = useRouter();
 	const currentPath = usePathname();
-// console.log(
-// 			(currentPath.s !== "/auth/signin" || currentPath !=="/auth/signup"))
+
 	useEffect(() => {
 		if (status === "loading") return;
 
 		if (
 			status === "unauthenticated" &&
-			(!currentPath.startsWith("/auth"))
+			(currentPath.startsWith("/dashboard"))
 		) {
 			router.push("/auth/signin");
 		}
@@ -25,7 +24,7 @@ const AuthProvider: FC<{ children: React.ReactNode }> = ({ children }) => {
 			status === "authenticated" &&
 			(currentPath.startsWith("/auth"))
 		) {
-			router.push("/dashboard/analysis");
+			router.push("/dashboard");
 		}
 	}, [status, currentPath, router]);
 

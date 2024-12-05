@@ -19,6 +19,7 @@ export const NextOptions: NextAuthOptions = {
 					credentials?.email as string,
 					credentials?.password as string
 				)) as {
+
 					email: string;
 					id: number;
 				};
@@ -43,9 +44,24 @@ export const NextOptions: NextAuthOptions = {
 	],
 	secret: process.env.NEXTAUTH_SECRET,
 	callbacks: {
+		signIn: async ({ credentials}) => {
+			const user = (await loginFunction(
+					credentials?.email as string,
+					credentials?.password as string
+				)) as {
+					status?: number;
+					email: string;
+					id: number;
+				};
+				// console.log(user)
+				if(!`${user?.status}`.startsWith("4")){
+					return true
+				}else{
+					return false;
+				}
+		},
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		async session({ session, token }: any) {
-			session.user = token.user;
+		async session({ session }: any) {			
 			return session;
 		},
 	},

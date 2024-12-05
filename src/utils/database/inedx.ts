@@ -1,7 +1,8 @@
 import Database from "better-sqlite3";
 
 // Create or connect to SQLite database
-const db = new Database("users.db", { verbose: console.log });
+// const db = new Database("users.db", { verbose: console.log });
+const db = new Database("users.db");
 
 // Initialize a table if not exists
 db.exec(`

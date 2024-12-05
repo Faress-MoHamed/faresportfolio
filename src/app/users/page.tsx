@@ -3,7 +3,7 @@ import React from "react";
 import { gql, useQuery } from "@apollo/client";
 import { useEffect } from "react";
 import client from "../../utils/Apolloclient/index";
-import ModeSwitch from "@/common/components/molecules/mode-switch";
+// import HeroImage from "@/common/components/atoms/HeroImage";
 
 const GET_USERS = gql`
 	query GetUsers {
@@ -20,13 +20,9 @@ export default function UsersPage() {
 		console.log(data, loading, error);
 	}, [data, loading, error]);
 	return (
-		<div className="w-[500px] h-[500px] bg-green-500 flex items-center justify-center">
-			<div className="flex items-center space-x-4">
-				<ModeSwitch />
-				<label htmlFor="airplane-mode" className="text-white">
-					Airplane Mode
-				</label>
-			</div>
-		</div>
+		<>
+		<p>fares</p>
+		{/* <HeroImage/> */}
+		</>
 	);
 }

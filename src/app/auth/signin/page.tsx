@@ -41,7 +41,7 @@ export default function SignInForm() {
 	});
 
 	const handleGoogleSignIn = async () => {
-		const res = await signIn("google",{ callbackUrl: '/' });
+		const res = await signIn("google", { callbackUrl: "/" });
 		console.log(res);
 	};
 	return (

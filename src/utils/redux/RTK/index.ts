@@ -8,12 +8,13 @@ import {
 	PURGE,
 	REGISTER,
 } from "redux-persist";
-import { persistedReducer } from "../persist";
 import { sagaMiddleware } from "../saga";
 import { getAllPosts } from "../saga/actions/sagas";
+import rootReducer from "./slices";
 
 export const store = configureStore({
-	reducer: persistedReducer,
+	reducer: rootReducer,
+	devTools: true,
 	middleware: (getDefaultMiddleware) =>
 		getDefaultMiddleware({
 			serializableCheck: {

@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { compareSync } from "bcryptjs";
-import { cookies } from "next/headers";
 // import { createAccessToken, createRefreshToken } from "./jwt";
 import db from "../database/inedx";
 
 interface LoginSuccess {
+	name: string;
 	email: string;
 	id: number;
 	status?: number; // Optional status for consistency
@@ -12,19 +12,17 @@ interface LoginSuccess {
 	password?: undefined; // Password is explicitly undefined for security
 }
 
-
 // Error response type (when validation or login fails)
 interface LoginError {
-  status: number;
-  message: string;
-  password?: undefined;
-  email?: undefined;
-  id?: undefined;
+	status: number;
+	message: string;
+	password?: undefined;
+	email?: undefined;
+	id?: undefined;
 }
 
 // Combine types for the return value
 type LoginResponse = LoginSuccess | LoginError;
-
 
 export const loginFunction = async (
 	email: string,
@@ -34,7 +32,7 @@ export const loginFunction = async (
 	const validateEmail = z.string().email();
 	const isValidEmail = validateEmail.safeParse(email);
 
-	if (!isValidEmail) {
+	if (!isValidEmail.success) {
 		return { status: 400, message: "please enter valid email" };
 	}
 	//checl if password is valid
@@ -42,13 +40,15 @@ export const loginFunction = async (
 		.string()
 		.max(16, "the max length of password is 16 char");
 	const isValidpassword = validatepassword.safeParse(password);
-	if (!isValidpassword) {
+	if (!isValidpassword.success) {
 		return { status: 400, message: "please enter valid password" };
 	}
 	//get user from database by email
-  const userExist = db
+	const userExist = db
 		.prepare(`SELECT * FROM users where email = ?`)
-		.get(email) as { email: string; id: number; password: string } | undefined;;
+		.get(email) as
+		| { email: string; id: number; password: string; name: string }
+		| undefined;
 	//check if user doesn't exist
 	if (!userExist) {
 		return { status: 404, message: "This user is not exist" };
@@ -67,12 +67,12 @@ export const loginFunction = async (
 
 	// (await cookies()).set("refreshToken", refreshToken);
 	// (await cookies()).set("accessToken", AccessToken);
-return {
-	email: userExist.email,
-	id: userExist.id,
-	password: undefined, // Explicitly omit password for security
-	message: "signed in successfully",
-	status:200
-  };
+	return {
+		email: userExist.email,
+		id: userExist.id,
+		name: userExist.name,
+		password: undefined, // Explicitly omit password for security
+		message: "signed in successfully",
+		status: 200,
+	};
 };
-
