@@ -6,7 +6,7 @@ import db from "../database/inedx";
 interface LoginSuccess {
 	name: string;
 	email: string;
-	id: number;
+	id: string;
 	status?: number; // Optional status for consistency
 	message?: string; // Optional status for consistency
 	password?: undefined; // Password is explicitly undefined for security
@@ -47,7 +47,7 @@ export const loginFunction = async (
 	const userExist = db
 		.prepare(`SELECT * FROM users where email = ?`)
 		.get(email) as
-		| { email: string; id: number; password: string; name: string }
+		| { email: string; id: string; password: string; name: string }
 		| undefined;
 	//check if user doesn't exist
 	if (!userExist) {
@@ -69,7 +69,7 @@ export const loginFunction = async (
 	// (await cookies()).set("accessToken", AccessToken);
 	return {
 		email: userExist.email,
-		id: +userExist.id,
+		id: userExist.id,
 		name: userExist.name,
 		password: undefined, // Explicitly omit password for security
 		message: "signed in successfully",
