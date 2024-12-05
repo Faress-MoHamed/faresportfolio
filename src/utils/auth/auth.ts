@@ -69,7 +69,7 @@ export const loginFunction = async (
 	// (await cookies()).set("accessToken", AccessToken);
 	return {
 		email: userExist.email,
-		id: userExist.id,
+		id: +userExist.id,
 		name: userExist.name,
 		password: undefined, // Explicitly omit password for security
 		message: "signed in successfully",
