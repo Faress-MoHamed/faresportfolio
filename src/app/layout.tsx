@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/providers/themeProvider";
-import ApolloProvider from "@/providers/apolloProvider";
+// import ApolloProvider from "@/providers/apolloProvider";
 import SessionProvider from "@/providers/sessionProvider";
 import AuthProvider from "@/providers/AuthProvider";
 import ToasterProvider from "@/providers/reactHotToast-Provider";
@@ -38,7 +38,7 @@ export default function RootLayout({
 				<ReduxProvider>
 					<SessionProvider>
 						<AuthProvider>
-							<ApolloProvider>
+							{/* <ApolloProvider> */}
 								<ThemeProvider
 									attribute="class"
 									defaultTheme="system"
@@ -49,7 +49,7 @@ export default function RootLayout({
 									{children}
 									<Footer />
 								</ThemeProvider>{" "}
-							</ApolloProvider>
+							{/* </ApolloProvider> */}
 						</AuthProvider>
 					</SessionProvider>
 				</ReduxProvider>
