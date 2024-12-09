@@ -4,6 +4,7 @@
 // import { deleteProject } from "@/actions/ProjectActions";
 import FormProjectCard from "@/common/components/organisms/FormProjectCard";
 import projectsdb from "@/utils/database/projects";
+import type { FieldPacket } from "mysql2";
 // import ProjectForm from "./ProjectForm";
 
 // interface formDashboardProps {
