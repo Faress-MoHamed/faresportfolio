@@ -3,6 +3,7 @@
 import db from "@/utils/database/inedx";
 import { hashSync } from "bcryptjs";
 import { z } from "zod";
+import { type FieldPacket, type ResultSetHeader } from "mysql2";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const SignUpAction = async (_: any, formData: FormData) => {
@@ -38,10 +39,11 @@ export const SignUpAction = async (_: any, formData: FormData) => {
 			return { status: 400, message: "Please enter a valid password" };
 		}
 
-		// Check if user already exists
-		const existingUser = db
-			.prepare(`SELECT * FROM users WHERE email = ?`)
-			.get(email) as { id: number; email: string } | undefined;
+		const [rows] = (await db.execute(`SELECT * FROM users WHERE email = ?`, [
+			email,
+		])) as [{ id: number; email: string }[], FieldPacket[]];
+
+		const existingUser = rows.length > 0 ? rows[0] : undefined;
 
 		if (existingUser) {
 			return { status: 409, message: "Email is already in use" };
@@ -50,15 +52,14 @@ export const SignUpAction = async (_: any, formData: FormData) => {
 		// Hash the password
 		const hashedPassword = hashSync(password, 10);
 
-		// Insert the new user into the database
-		const insertStatement = db.prepare(
-			`INSERT INTO users (name, email, password) VALUES (?, ?, ?)`
+		const [result] = await db.execute<ResultSetHeader>(
+			`INSERT INTO users (name, email, password) VALUES (?, ?, ?)`,
+			[name, email, hashedPassword]
 		);
-		const result = insertStatement.run(name, email, hashedPassword);
 
-		if (result.changes > 0) {
+		if (result.affectedRows > 0) {
 			return {
-				id: result.lastInsertRowid as number,
+				id: result.insertId as number,
 				email,
 				name,
 				status: 201,

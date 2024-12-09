@@ -1,23 +1,24 @@
-import Database from "better-sqlite3";
+import mysql from "mysql2";
 
-// Create or connect to SQLite database
-// const db = new Database("users.db", { verbose: console.log });
-const projectsdb = new Database("projects.db");
+const projectsdb = mysql
+	.createPool({
+		host: process.env.DATABASE_HOST as string,
+		user: process.env.DATABASE_USER as string,
+		port: parseInt(process.env.DATABASE_PORT || "51539") as number,
+		password: process.env.DATABASE_PASSWORD as string,
+		database: process.env.DATABASE_SCHEMA as string,
+	})
+	.promise();
 
-
-// Initialize a table if not exists
-projectsdb.exec(
-	`
-      CREATE TABLE IF NOT EXISTS projects (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT,
-        description TEXT,
-        skills TEXT,
-        mediaUrls TEXT,
-        githubLink TEXT,
-        websiteLink TEXT
-      );`
-    );
+await projectsdb.execute(`CREATE TABLE IF NOT EXISTS projects (
+    id INTEGER PRIMARY KEY AUTO_INCREMENT,
+    title TEXT(255) NOT NULL,
+    description TEXT(255) NOT NULL,
+    slug TEXT(255) NOT NULL,
+    skills TEXT(255) NOT NULL,
+    mediaUrls TEXT(255) NOT NULL,
+    githubLink TEXT(255),
+    websiteLink TEXT(255)
+);`);
 
 export default projectsdb;
-

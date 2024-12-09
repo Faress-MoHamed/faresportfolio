@@ -1,17 +1,24 @@
-import Database from "better-sqlite3";
+import mysql from "mysql2";
 
-// Create or connect to SQLite database
-// const db = new Database("users.db", { verbose: console.log });
-const db = new Database("users.db");
+// create the connection to database
+const db = mysql
+	.createPool({
+		host: process.env.DATABASE_HOST as string,
+		user: process.env.DATABASE_USER as string,
+		port: parseInt(process.env.DATABASE_PORT || "51539") as number,
+		password: process.env.DATABASE_PASSWORD as string,
+		database: process.env.DATABASE_SCHEMA as string,
+	})
+	.promise();
 
-// Initialize a table if not exists
-db.exec(`
-  CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    email TEXT NOT NULL UNIQUE,
-    password TEXT NOT NULL
-  );
+await db.execute(`
+CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTO_INCREMENT,
+  name TEXT NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password TEXT NOT NULL
+);
+
 `);
 
 export default db;

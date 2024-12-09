@@ -319,14 +319,28 @@ export default function ProjectForm() {
 				</div>
 				<div className="flex items-center justify-between">
 					<Submit>{project.id !== "" ? "Edit Project" : "Add Project"}</Submit>
-					{project.id!==""&&<Cancel onClick={() => resetForm()}>{"cancel"}</Cancel>}
+					{project.id !== "" && (
+						<Cancel onClick={() => resetForm()}>{"cancel"}</Cancel>
+					)}
 				</div>
 
-				{state.message && (
+				{state.message && !`${state.status}`.startsWith("4") && (
 					<p className="mt-4 text-green-600 dark:text-green-400">
 						{state.message}
 					</p>
 				)}
+				{state.message &&
+					`${state.status}`.startsWith("4") &&
+					Object.entries(JSON.parse(state.message)).map(([key, value]) => {
+						const errors = (value as { _errors?: string[] })?._errors || [];
+						return (
+							<ul className={"text-red-600"} key={key}>
+								<li>
+									<strong className={"text-black dark:text-white"}>{key}:</strong> {errors.join(", ")}
+								</li>
+							</ul>
+						);
+					})}
 			</form>
 		</React.Fragment>
 	);
@@ -367,3 +381,34 @@ const Cancel: React.FC<CancelProps> = ({ children, ...props }) => {
 		</button>
 	);
 };
+
+{
+	/**{
+    "_errors": [],
+    "title": {
+        "_errors": [
+            "Title is required"
+        ]
+    },
+    "description": {
+        "_errors": [
+            "description is required"
+        ]
+    },
+    "skills": {
+        "_errors": [
+            "Array must contain at least 1 element(s)"
+        ]
+    },
+    "githubLink": {
+        "_errors": [
+            "Invalid GitHub URL"
+        ]
+    },
+    "websiteLink": {
+        "_errors": [
+            "Invalid website URL"
+        ]
+    }
+} */
+}

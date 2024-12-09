@@ -4,6 +4,42 @@
 import { revalidatePath } from "next/cache";
 import { cloudinary } from "@/utils/cloudinary/cloudinary";
 import projectsdb from "@/utils/database/projects";
+import slugify from "slugify";
+// import DOMPurify from "dompurify";
+import z from "zod";
+import xss from "xss";
+
+const projectSchema = z.object({
+	title: z.string().min(1, "Title is required"),
+	description: z.string().min(1, "description is required"),
+	skills: z.array(z.string()).min(1),
+});
+
+// Function to validate project data
+const validateProject = ({
+	title,
+	description,
+	skills,
+}: {
+	title: string;
+	description: string;
+	skills: string[];
+}) => {
+	const validation = projectSchema.safeParse({
+		title,
+		description,
+		skills,
+	});
+
+	if (!validation.success) {
+		// Return error response
+		return {
+			status: 400,
+			message: "Validation failed",
+			errors: validation.error.format(),
+		};
+	}
+};
 
 async function uploadToCloudinary(file: File): Promise<string> {
 	const arrayBuffer = await file.arrayBuffer();
@@ -39,7 +75,6 @@ export async function removeFromCloudinary(
 	publicId: string,
 	resourceType: string = "image"
 ): Promise<void> {
-	console.log(publicId, resourceType);
 	return new Promise((resolve, reject) => {
 		cloudinary.uploader.destroy(
 			publicId,
@@ -64,11 +99,11 @@ export async function addProject(
 	state: { message: string },
 	formData: FormData
 ) {
-	const title = formData.get("title") as string;
-	const description = formData.get("description") as string;
+	let title = formData.get("title") as string;
+	let description = formData.get("description") as string;
 	const skills = JSON.parse(formData.get("skills") as string);
-	const githubLink = formData.get("githubLink") as string;
-	const websiteLink = formData.get("websiteLink") as string;
+	let githubLink = formData.get("githubLink") as string;
+	let websiteLink = formData.get("websiteLink") as string;
 
 	const mediaUrls: string[] = [];
 	for (const [key, value] of formData.entries()) {
@@ -79,28 +114,33 @@ export async function addProject(
 		}
 	}
 
-	// console.log(
-	// 	title,
-	// 	description,
-	// 	JSON.stringify(skills),
-	// 	githubLink,
-	// 	websiteLink,
-	// 	mediaUrls
-	// );
+	const result = validateProject({
+		title,
+		description,
+		skills,
+	});
 
-	projectsdb
-		.prepare(
-			`INSERT INTO projects (title, description, skills, mediaUrls, githubLink, websiteLink) 
-            VALUES (?, ?, ?, ?, ?, ?)`
-		)
-		.run(
-			title,
+	if (result?.status === 400) {
+		return { status: result.status, message: JSON.stringify(result.errors) };
+	}
+	title = xss(title);
+	description = xss(description);
+	githubLink = xss(githubLink);
+	websiteLink = xss(websiteLink);
+	const projectSlug = slugify(title, {
+		lower: true,
+	});
+	await projectsdb
+		.execute(
+			`INSERT INTO projects (title, description, skills, slug , mediaUrls, githubLink, websiteLink) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)`,[title,
 			description,
 			JSON.stringify(skills),
+			projectSlug,
 			JSON.stringify(mediaUrls),
 			githubLink,
-			websiteLink
-		);
+			websiteLink]
+		)
 
 	revalidatePath("/dashboard");
 	revalidatePath("/");
@@ -139,23 +179,30 @@ export async function editProject(
 		}
 	}
 
+	const result = validateProject({
+		title,
+		description,
+		skills,
+	});
+
+	if (result?.status === 400) {
+		return { status: result.status, message: JSON.stringify(result.errors) };
+	}
+
 	// Update the project in the database
 	try {
-		projectsdb
-			.prepare(
+		await projectsdb
+			.execute(
 				`UPDATE projects
              SET title = ?, description = ?, skills = ?, mediaUrls = ?, githubLink = ?, websiteLink = ?
-             WHERE id = ?`
-			)
-			.run(
-				title,
+             WHERE id = ?`,[title,
 				description,
 				JSON.stringify(skills),
 				JSON.stringify(mediaUrls),
 				githubLink,
 				websiteLink,
-				id
-			);
+				id]
+			)
 	} catch (error: any) {
 		return { message: `Error updating project: ${error.message}` };
 	}
@@ -167,7 +214,7 @@ export async function editProject(
 }
 
 export async function deleteProject(id: string) {
-	projectsdb.prepare("DELETE FROM projects WHERE id = ?").run(id);
+	await projectsdb.execute("DELETE FROM projects WHERE id = ?",[id])
 
 	revalidatePath("/dashboard");
 	revalidatePath("/");

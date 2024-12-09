@@ -3,10 +3,14 @@ import Header from "../../molecules/Header";
 import type { ProjectCardProp } from "../../organisms/ProjectCard/ProjectCard.types";
 import ProjectCard from "../../organisms/ProjectCard";
 import projectsdb from "@/utils/database/projects";
+import type { FieldPacket } from "mysql2";
 
-export default function MyProjects() {
-	const projectsPrepare = projectsdb.prepare("SELECT * FROM projects");
-	const projects: ProjectCardProp[] = projectsPrepare.all() as ProjectCardProp[];
+export default async function MyProjects() {
+	const [projects] = (await projectsdb.execute("SELECT * FROM projects")) as [
+		ProjectCardProp[],
+		FieldPacket[]
+	];
+	console.log(projects);
 	return (
 		<section id="projects">
 			<div className="space-y-12 w-full py-12">

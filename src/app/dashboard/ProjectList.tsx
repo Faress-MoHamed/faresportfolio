@@ -21,7 +21,7 @@ interface ProjectCardProp {
 	webSiteLink?: string;
 }
 // export default function ProjectList({ projects }: formDashboardProps) {
-export default function ProjectList() {
+export default async function ProjectList() {
 	// const [editingProject, setEditingProject] = useState<ProjectCardProp | null>(
 	// 	null
 	// );
@@ -31,9 +31,10 @@ export default function ProjectList() {
 	// };
 
 
-	const projects = projectsdb
-		.prepare("SELECT * FROM projects")
-		.all() as ProjectCardProp[];
+	const [projects] = (await projectsdb.execute("SELECT * FROM projects")) as [
+		ProjectCardProp[],
+		FieldPacket[]
+	];
 	// console.log(projects);
 
 	return (
