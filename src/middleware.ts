@@ -3,8 +3,17 @@ import type { NextRequest } from "next/server";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 
+
 export async function middleware(request: NextRequest) {
-	const nextAuthSessionCookie = (await cookies()).get("next-auth.session-token");
+	let nextAuthSessionCookie;
+
+	if (process.env.environment === "dev") {
+		nextAuthSessionCookie = (await cookies()).get("next-auth.session-token");
+	} else {
+		nextAuthSessionCookie = (await cookies()).get(
+			"__Secure-next-auth.session-token"
+		);
+	}
 	const nextAuthSessionToken = nextAuthSessionCookie?.value;
 
 	let token;
